@@ -9,7 +9,7 @@ Command: bash ``` docker container run -dit -P nginx:lfs250 ```
 ## best practice will be to define port when running the container, e.g. ``` docker run -d -p 8080:80 nginx:lfs250 ```
  -d: to detach the container
  -i: make the container interactive
- -t: Allocate a pseudo tty
+ -t: Allocate a pseudo TTY
  -P: get random high range port (helps with accessing the application from outside)
 
  # To find an IP address
@@ -33,10 +33,42 @@ Command: bash ``` docker container run -dit -P nginx:lfs250 ```
      sudo systemctl restart containerd
      sudo systemctl enable containerd
      sudo systemctl status containerd ```
-   You should see active on the terminal active (running) 
- Install kubeadm
- Then, install kubectl - this is a CLI utility used to communicate with the Kubernetes cluster to deploy workloads
- Then, Kubelet - this is the main Kubernetes component that runs as a system service on every node of the cluster
+   You should see active on the terminal (running)
+5. Test container RunTime (CRI)
+   5.1. first install the cri CLI - crictl and test it. 
+   command: ```
+        sudo apt install -y cri-tools
+        sudo crictl info
+   ```  if it displays information, it means it is working.
+   Kubernetes talks to containerd via CRI
+ Install core tools.  
+ Because Kubernetes is strict when it comes to versions, these core tools are supposed to be the same version. 
+ 1. Add the Kubernetes repo
+    ```
+     sudo apt update
+     sudo apt install -y apt-transport-https ca-certificates curl
+    ```
+    ```
+     sudo mkdir -p /etc/apt/keyrings
+     curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo tee /etc/apt/keyrings/kubernetes.asc
+    ```
+    ```
+     echo "deb [signed-by=/etc/apt/keyrings/kubernetes.asc] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list 
+    ```
+2. Install packages
+   ```
+     sudo apt update
+    sudo apt install -y kubelet kubeadm kubectl
+   ```
+3. Lock versions - This is very important (It prevents accidental upgrades that break your cluster)
+   ```
+      sudo apt-mark hold kubelet kubeadm kubectl     
+   ```
+4.  ```
+       kubeadm version
+      kubectl version --client
+      kubelet --version
+    ```
  The documentation suggests installing cri-dockered for the VM. It's not important, but it is worth reading about. 
  
  
