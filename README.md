@@ -69,6 +69,39 @@ Command: bash ``` docker container run -dit -P nginx:lfs250 ```
       kubectl version --client
       kubelet --version
     ```
+   Now we have to initialize kubeadm but before that we have to fix certain issues
+   1. Disable swap - this is required and make it permanent
+      command: ```
+              sudo swapoff -a
+              sudo sed -i '/ swap / s/^/#/' /etc/fstab
+      ```
+   2. Enable Kernel Modules
+      command: ```
+             sudo modprobe overlay
+             sudo modprobe br_netfilter
+            ```
+ 3. Set sysctl params  ```
+        cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+        net.bridge.bridge-nf-call-iptables = 1
+        net.ipv4.ip_forward = 1
+        net.bridge.bridge-nf-call-ip6tables = 1
+        EOF
+    ```
+    ```
+     sudo sysctl --system
+    ```
+    Restarts the container runtime to apply configuration changes.
+    ```
+     sudo systemctl restart containerd
+    ```
+    Ensure that containerd starts automatically on boot
+    ```
+     sudo systemctl enable containerd
+    ```
+    Now initialize kubeadm (this command intializes the Kubernetes control plane and starts your cluster)
+    command: ```
+      sudo kubeadm init
+    ```
  The documentation suggests installing cri-dockered for the VM. It's not important, but it is worth reading about. 
  
  
